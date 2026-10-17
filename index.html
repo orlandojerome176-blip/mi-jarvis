@@ -1,1 +1,263 @@
-https://github.com/orlandojerome176-blip/mi-jarvis
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#050b18">
+<title>JARVIS | Asistente personal</title>
+<style>
+:root{--bg:#050b18;--panel:#0b1830;--line:#174b70;--cyan:#38d9ff;--blue:#3984ff;--text:#eaf8ff;--muted:#8db3c9}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% 10%,#102c4c 0,#050b18 48%,#02050c 100%);color:var(--text);font-family:Arial,Helvetica,sans-serif}
+main{width:min(900px,100%);margin:auto;padding:18px 14px 28px}
+header{text-align:center;padding:12px 0 4px}
+.kicker{letter-spacing:5px;color:var(--cyan);font-size:11px}
+h1{font-size:clamp(32px,8vw,54px);letter-spacing:5px;margin:10px 0 5px;text-shadow:0 0 22px #168dff}
+.subtitle{color:var(--muted);font-size:13px}
+.orb-wrap{display:grid;place-items:center;padding:22px 0 18px}
+.orb{width:145px;height:145px;border-radius:50%;position:relative;display:grid;place-items:center;background:radial-gradient(circle,#8af3ff 0,#1b8dce 13%,#082b59 42%,#061126 68%);box-shadow:0 0 22px #139de7,0 0 55px #1268b9,inset 0 0 25px #5ae6ff;animation:pulse 3s ease-in-out infinite}
+.orb:before,.orb:after{content:"";position:absolute;border:1px solid #4ddcff;border-radius:50%;inset:-10px;animation:spin 9s linear infinite}
+.orb:after{inset:-19px;border-color:#2d75be;animation-direction:reverse;animation-duration:14s}
+.orb span{font-weight:bold;letter-spacing:3px;color:white;text-shadow:0 0 10px white}
+@keyframes pulse{50%{filter:brightness(1.35);transform:scale(1.035)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.status{text-align:center;color:var(--cyan);font-size:12px;letter-spacing:2px;margin-bottom:18px}
+.panel{background:linear-gradient(145deg,rgba(12,29,54,.95),rgba(4,12,27,.96));border:1px solid var(--line);border-radius:16px;padding:15px;box-shadow:0 10px 35px #0005;margin-bottom:14px}
+.panel-title{font-size:12px;letter-spacing:2px;color:var(--cyan);margin:0 0 12px}
+.chat{height:245px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:2px 1px 10px}
+.msg{padding:10px 12px;border-radius:12px;max-width:92%;font-size:14px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+.bot{align-self:flex-start;background:#0d2844;border:1px solid #164b6d}
+.user{align-self:flex-end;background:#123d70;border:1px solid #2864a4}
+small.tag{display:block;color:var(--cyan);font-size:10px;letter-spacing:1px;margin-bottom:3px}
+.entry{display:flex;gap:8px}
+input{min-width:0;flex:1;background:#030a16;border:1px solid #205477;border-radius:10px;color:white;padding:13px;font-size:15px;outline:none}
+input:focus{border-color:var(--cyan)}
+button{background:linear-gradient(135deg,#087eb6,#2359d8);border:1px solid #48b8ed;border-radius:10px;color:white;padding:11px 13px;font-weight:bold;cursor:pointer}
+button:active{transform:scale(.98)}
+button.secondary{background:#0b1c32;border-color:#25516d;color:#bceeff}
+.tools{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.tools button{font-size:12px;min-height:45px;padding:9px 5px}
+.help{color:var(--muted);font-size:12px;line-height:1.7}
+footer{text-align:center;color:#64849a;font-size:11px;padding:8px}
+@media(min-width:650px){.chat{height:290px}.orb{width:165px;height:165px}}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <div class="kicker">SISTEMA PERSONAL DE ASISTENCIA</div>
+  <h1>J.A.R.V.I.S.</h1>
+  <div class="subtitle">Interfaz de asistencia · Edición personal</div>
+</header>
+<div class="orb-wrap"><div class="orb" aria-label="Núcleo animado de JARVIS"><span>J.A.R.V.I.S.</span></div></div>
+<div class="status" id="status">● SISTEMA EN LÍNEA</div>
+
+<section class="panel">
+  <h2 class="panel-title">COMUNICACIÓN</h2>
+  <div class="chat" id="chat" aria-live="polite">
+    <div class="msg bot"><small class="tag">JARVIS</small>Buenas. Estoy listo. Escribe un comando o pulsa el micrófono si tu navegador lo admite. Escribe «ayuda» para ver lo que puedo hacer.</div>
+  </div>
+  <form class="entry" id="form">
+    <input id="input" autocomplete="off" placeholder="Escribe un comando..." aria-label="Escribe un comando">
+    <button type="submit">Enviar</button>
+  </form>
+  <div class="entry" style="margin-top:9px">
+    <button type="button" class="secondary" id="mic" style="flex:1">🎙️ Hablar</button>
+    <button type="button" class="secondary" id="voice" style="flex:1">🔊 Voz: activada</button>
+    <button type="button" class="secondary" id="clear" style="flex:1">Limpiar chat</button>
+  </div>
+</section>
+
+<section class="panel">
+  <h2 class="panel-title">ACCESOS RÁPIDOS</h2>
+  <div class="tools">
+    <button type="button" data-cmd="hora">🕒 Hora</button>
+    <button type="button" data-cmd="fecha">📅 Fecha</button>
+    <button type="button" data-cmd="ayuda">❔ Ayuda</button>
+    <button type="button" data-url="https://www.youtube.com/">▶️ YouTube</button>
+    <button type="button" data-url="https://www.google.com/">🔎 Google</button>
+    <button type="button" data-url="https://www.wikipedia.org/">📚 Wikipedia</button>
+  </div>
+</section>
+
+<section class="panel">
+  <h2 class="panel-title">COMANDOS DISPONIBLES</h2>
+  <div class="help">
+    • «hola» o «¿cómo estás?»<br>
+    • «hora», «fecha» o «qué día es hoy»<br>
+    • «calcula 25 * 4» (también +, -, / y paréntesis)<br>
+    • «abre YouTube», «abre Google» o «abre Wikipedia»<br>
+    • «busca gatos en Google» o «busca anime en YouTube»<br>
+    • «mi nombre es …» y después «¿cómo me llamo?»<br>
+    • «recuérdame …» y después «¿qué te pedí recordar?» (solo durante esta sesión)<br>
+    • «cuéntame un dato», «motivación», «chiste», «para de hablar» y «ayuda»
+  </div>
+</section>
+<footer>JARVIS personal · Funciona en el navegador · Algunas funciones de voz dependen del dispositivo</footer>
+</main>
+<script>
+(() => {
+  const chat = document.getElementById('chat');
+  const form = document.getElementById('form');
+  const input = document.getElementById('input');
+  const status = document.getElementById('status');
+  const mic = document.getElementById('mic');
+  const voiceButton = document.getElementById('voice');
+  let voiceOn = true;
+  let recognition = null;
+  let userName = '';
+  let remembered = '';
+
+  function addMessage(text, who='bot') {
+    const el = document.createElement('div');
+    el.className = 'msg ' + who;
+    const tag = document.createElement('small');
+    tag.className = 'tag';
+    tag.textContent = who === 'bot' ? 'JARVIS' : 'TÚ';
+    el.appendChild(tag);
+    el.appendChild(document.createTextNode(text));
+    chat.appendChild(el);
+    chat.scrollTop = chat.scrollHeight;
+  }
+  function speak(text) {
+    if (!voiceOn || !('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'es-ES';
+    utterance.rate = 1;
+    window.speechSynthesis.speak(utterance);
+  }
+  function reply(text) { addMessage(text, 'bot'); speak(text); }
+  function normalize(s) {
+    return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+  }
+  function safeCalculate(expression) {
+    const cleaned = expression.replace(/,/g, '.').trim();
+    if (!cleaned || !/^[0-9+\-*/().%\s]+$/.test(cleaned)) return null;
+    try {
+      // Only arithmetic characters are allowed; no variables, functions or code.
+      const result = Function('"use strict"; return (' + cleaned + ')')();
+      if (typeof result !== 'number' || !Number.isFinite(result)) return 'No puedo calcular esa operación.';
+      return String(Number(result.toFixed(8)));
+    } catch (_) { return 'No entendí la operación. Prueba, por ejemplo: calcula 25 * 4'; }
+  }
+  const facts = [
+    'Los pulpos tienen tres corazones.',
+    'La luz del Sol tarda unos 8 minutos y 20 segundos en llegar a la Tierra.',
+    'La miel bien conservada puede durar muchísimo tiempo sin echarse a perder.',
+    'Un día en Venus dura más que su año.',
+    'Los tiburones existen desde antes que los árboles.'
+  ];
+  const jokes = [
+    '¿Qué hace una abeja en el gimnasio? ¡Zum-ba!',
+    '¿Por qué la computadora fue al médico? Porque tenía un virus.',
+    '¿Qué le dijo un cero a un ocho? ¡Bonito cinturón!'
+  ];
+  function handle(raw) {
+    const original = raw.trim();
+    const q = normalize(original);
+    if (!q) return;
+    addMessage(original, 'user');
+
+    let m;
+    if (/^(hola|buenas|buenos dias|buenas tardes|buenas noches)\b/.test(q)) {
+      reply('Hola' + (userName ? ', ' + userName : '') + '. Todos los sistemas están listos. ¿Qué necesitas?');
+    } else if (q.includes('como estas') || q.includes('que tal')) {
+      reply('Estoy funcionando correctamente. Gracias por preguntar. ¿En qué te ayudo?');
+    } else if (q === 'hora' || q.includes('que hora') || q.includes('dime la hora')) {
+      reply('Son las ' + new Date().toLocaleTimeString('es-DO', {hour:'2-digit', minute:'2-digit'} ) + '.');
+    } else if (q === 'fecha' || q.includes('que fecha') || q.includes('que dia es hoy') || q.includes('dime la fecha')) {
+      reply('Hoy es ' + new Date().toLocaleDateString('es-DO', {weekday:'long', year:'numeric', month:'long', day:'numeric'}) + '.');
+    } else if ((m = q.match(/^(?:mi nombre es|me llamo|llamame)\s+(.+)$/))) {
+      userName = original.match(/(?:mi nombre es|me llamo|llámame|llamame)\s+(.+)/i)[1].trim().slice(0,50);
+      reply('Entendido. Durante esta sesión te llamaré ' + userName + '.');
+    } else if (q.includes('como me llamo') || q.includes('cual es mi nombre')) {
+      reply(userName ? 'Me dijiste que te llamas ' + userName + '.' : 'Todavía no me has dicho tu nombre. Prueba: mi nombre es …');
+    } else if ((m = q.match(/^(?:recuerdame|recuerda|anota)\s+(.+)$/))) {
+      remembered = original.replace(/^(recuerdame|recuerda|anota)\s+/i, '').slice(0,200);
+      reply('Lo tendré presente mientras esta página siga abierta: ' + remembered);
+    } else if (q.includes('que te pedi recordar') || q.includes('que debes recordar') || q.includes('que recuerdas')) {
+      reply(remembered ? 'Me pediste recordar: ' + remembered : 'No tengo nada guardado en esta sesión todavía.');
+    } else if (q.startsWith('calcula ') || q.startsWith('cuanto es ') || q.startsWith('cuánto es ')) {
+      const expr = original.replace(/^(calcula|cu[aá]nto es)\s*/i, '');
+      const result = safeCalculate(expr);
+      reply(result === null ? 'Escribe una operación numérica, por ejemplo: calcula (8 + 2) * 3.' : 'El resultado es ' + result + '.');
+    } else if (q === 'ayuda' || q.includes('que puedes hacer') || q.includes('comandos')) {
+      reply('Puedo decirte la hora y la fecha, hacer cálculos, abrir páginas, buscar en Google o YouTube, contar un dato, decir un chiste, darte motivación y recordar datos durante esta sesión. Prueba: calcula 12 * 8, busca anime en YouTube o mi nombre es Orlando.');
+    } else if (q.includes('abre youtube') || q === 'youtube') {
+      window.open('https://www.youtube.com/', '_blank', 'noopener'); reply('Abriendo YouTube.');
+    } else if (q.includes('abre google') || q === 'google') {
+      window.open('https://www.google.com/', '_blank', 'noopener'); reply('Abriendo Google.');
+    } else if (q.includes('abre wikipedia') || q === 'wikipedia') {
+      window.open('https://www.wikipedia.org/', '_blank', 'noopener'); reply('Abriendo Wikipedia.');
+    } else if ((m = original.match(/^(?:busca|buscar)\s+(.+?)\s+en\s+(google|youtube)$/i))) {
+      const term = encodeURIComponent(m[1]);
+      const url = m[2].toLowerCase() === 'youtube'
+        ? 'https://www.youtube.com/results?search_query=' + term
+        : 'https://www.google.com/search?q=' + term;
+      window.open(url, '_blank', 'noopener');
+      reply('Buscando ' + m[1] + ' en ' + m[2] + '.');
+    } else if (q.includes('cuentame un dato') || q.includes('dato curioso')) {
+      reply(facts[Math.floor(Math.random()*facts.length)]);
+    } else if (q.includes('chiste')) {
+      reply(jokes[Math.floor(Math.random()*jokes.length)]);
+    } else if (q.includes('motivacion') || q.includes('motivame')) {
+      reply('No tienes que resolverlo todo hoy. Avanza un paso a la vez, aprende de los errores y sigue construyendo lo que quieres lograr.');
+    } else if (q.includes('para de hablar') || q.includes('silencio') || q.includes('callate')) {
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+      addMessage('Voz detenida.', 'bot');
+    } else if (q.includes('gracias')) {
+      reply('De nada. Estoy aquí para ayudarte.');
+    } else if (q.includes('quien eres') || q.includes('que eres')) {
+      reply('Soy JARVIS, tu asistente personal en el navegador. Puedo ejecutar los comandos que tengo programados.');
+    } else {
+      reply('Todavía no tengo una respuesta programada para eso. Escribe «ayuda» para ver mis comandos, o prueba «busca ' + original.slice(0,60) + ' en Google».');
+    }
+  }
+
+  form.addEventListener('submit', event => {
+    event.preventDefault();
+    handle(input.value);
+    input.value = '';
+    input.focus();
+  });
+  document.querySelectorAll('[data-cmd]').forEach(button => {
+    button.addEventListener('click', () => handle(button.dataset.cmd));
+  });
+  document.querySelectorAll('[data-url]').forEach(button => {
+    button.addEventListener('click', () => {
+      window.open(button.dataset.url, '_blank', 'noopener');
+      addMessage('Abriendo ' + button.textContent.replace(/^[^ ]+ /,'') + '.', 'bot');
+    });
+  });
+  voiceButton.addEventListener('click', () => {
+    voiceOn = !voiceOn;
+    voiceButton.textContent = voiceOn ? '🔊 Voz: activada' : '🔇 Voz: apagada';
+    if (!voiceOn && 'speechSynthesis' in window) window.speechSynthesis.cancel();
+    status.textContent = voiceOn ? '● SISTEMA EN LÍNEA' : '● SISTEMA EN LÍNEA · VOZ DESACTIVADA';
+  });
+  document.getElementById('clear').addEventListener('click', () => {
+    chat.innerHTML = '';
+    addMessage('Conversación limpiada. Escribe «ayuda» para comenzar.', 'bot');
+  });
+
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (SpeechRecognition) {
+    recognition = new SpeechRecognition();
+    recognition.lang = 'es-ES';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    recognition.onstart = () => { status.textContent = '● ESCUCHANDO…'; mic.textContent = '🎙️ Escuchando…'; };
+    recognition.onend = () => { status.textContent = '● SISTEMA EN LÍNEA'; mic.textContent = '🎙️ Hablar'; };
+    recognition.onerror = () => { status.textContent = '● NO SE PUDO USAR EL MICRÓFONO'; mic.textContent = '🎙️ Intentar de nuevo'; };
+    recognition.onresult = event => { handle(event.results[0][0].transcript); };
+    mic.addEventListener('click', () => { try { recognition.start(); } catch (_) { reply('El micrófono ya está activo.'); } });
+  } else {
+    mic.addEventListener('click', () => reply('Este navegador no admite reconocimiento de voz aquí. Prueba Chrome actualizado o escribe el comando.'));
+    mic.textContent = '🎙️ Voz no disponible';
+  }
+})();
+</script>
+</body>
+      </html>
+  
